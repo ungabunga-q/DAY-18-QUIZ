@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Society Management Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-main: #f4f5f7; /* A soft, elegant gray */
+            --bg-card: #ffffff;
+            --text-heading: #1a202c; /* A deep charcoal */
+            --text-body: #4a5568;   /* A softer gray */
+            --text-muted: #a0aec0;  /* A light gray for hints */
+            --brand-primary: #4A5568; /* A sophisticated dark gray-blue */
+            --brand-secondary: #2D3748; /* A deeper charcoal */
+            --border-color: #e2e8f0; 
+            --green-correct: #38a169;
+            --green-correct-bg: #f0fff4;
+            --red-incorrect: #e53e3e;
+            --red-incorrect-bg: #fff5f5;
+        }
+        html {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-body);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .font-heading {
+            font-family: 'Playfair Display', serif;
+            color: var(--text-heading);
+            font-weight: 700;
+        }
+        .quiz-wrapper {
+             background-color: var(--bg-card);
+             border-radius: 1rem; /* 16px */
+             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+             padding: 2.5rem 3rem;
+             border: 1px solid var(--border-color);
+        }
+        .btn-primary {
+            background-color: var(--brand-secondary);
+            color: white;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            padding: 0.875rem 2.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            letter-spacing: 0.05em;
+        }
+        .btn-primary:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px -3px rgba(45, 55, 72, 0.3);
+        }
+        .option-btn {
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            transition: all 0.2s ease-in-out;
+            text-align: left;
+            width: 100%;
+            color: var(--text-body);
+            font-weight: 500;
+            border-radius: 0.75rem;
+        }
+        .option-btn:hover {
+            border-color: var(--brand-primary);
+            background-color: #edf2f7;
+        }
+        .option-btn.correct {
+            border-color: var(--green-correct);
+            background-color: var(--green-correct-bg);
+            color: var(--green-correct);
+            font-weight: 600;
+        }
+        .option-btn.incorrect {
+            border-color: var(--red-incorrect);
+            background-color: var(--red-incorrect-bg);
+            color: var(--red-incorrect);
+            font-weight: 600;
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+        .option-prefix {
+            border: 2px solid var(--border-color);
+            color: var(--text-muted);
+            background-color: #fff;
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:hover .option-prefix {
+            border-color: var(--brand-primary);
+            color: var(--brand-primary);
+            background-color: #e2e8f0;
+        }
+        .option-btn.correct .option-prefix {
+            border-color: var(--green-correct);
+            color: #fff;
+            background-color: var(--green-correct);
+        }
+        .option-btn.incorrect .option-prefix {
+             border-color: var(--red-incorrect);
+            color: #fff;
+            background-color: var(--red-incorrect);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container" class="w-full max-w-3xl mx-auto">
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="quiz-wrapper text-center">
+            <div class="inline-block p-4 bg-slate-100 rounded-full">
+                 <i data-lucide="award" class="h-10 w-10 text-brand-secondary"></i>
+            </div>
+            <h1 class="font-heading text-4xl mt-6">Society Management Quiz</h1>
+            <p class="text-center mt-3 max-w-md mx-auto">Test your expertise with 25 questions from the official course material. You have 15 minutes to complete the assessment.</p>
+            <div class="mt-8">
+                <button id="start-btn" class="btn-primary text-lg">Begin Assessment</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden quiz-wrapper">
+            <div class="flex justify-between items-center mb-4">
+                <div id="question-counter" class="font-bold text-sm tracking-wider text-brand-primary"></div>
+                <div id="timer" class="font-bold text-sm tracking-wider bg-slate-100 text-slate-700 px-3 py-1 rounded-full">15:00</div>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-1.5 mb-8">
+                <div id="progress-bar" class="bg-brand-primary h-1.5 rounded-full transition-all duration-300 ease-linear" style="width: 0%"></div>
+            </div>
+            <h2 id="question-text" class="font-heading text-3xl mb-8 text-center leading-snug"></h2>
+            <div id="options-container" class="space-y-4"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden quiz-wrapper">
+            <div class="text-center">
+                 <div id="result-icon-container" class="inline-block p-5 bg-slate-100 rounded-full mb-5">
+                    <!-- Icon will be injected here -->
+                </div>
+                <h1 class="font-heading text-4xl">Assessment Complete</h1>
+                <p id="result-message" class="text-lg mt-4 font-medium text-text-heading"></p>
+                
+                <div class="flex justify-center items-center gap-6 my-6">
+                    <div class="text-center">
+                        <p class="text-sm text-text-muted">SCORE</p>
+                        <p id="score-text" class="font-heading text-5xl"></p>
+                    </div>
+                     <div class="border-l border-border-color h-16"></div>
+                     <div class="text-center">
+                        <p class="text-sm text-text-muted">TIME TAKEN</p>
+                        <p id="time-taken" class="font-heading text-3xl"></p>
+                    </div>
+                </div>
+
+            </div>
+             <div class="mt-8 text-center">
+                <button id="restart-btn" class="btn-primary text-lg">Retake Assessment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const quizData = [
+            { question: "When a person is granted 'Provisional Membership' based on nomination in a 'Death Case,' which of the following rights are they typically restricted from exercising?", options: ["Attending society meetings and voting.", "Inspecting society documents.", "Selling or renting out the flat.", "Receiving dividends from society shares."], answer: "Selling or renting out the flat." },
+            { question: "What is the specific purpose of Appendix 16 in a 'Death Case' where the member has passed away without making a nomination?", options: ["To formally apply for membership by the nominee.", "To undertake financial liabilities on behalf of the applicant.", "To issue a provisional membership certificate to the nominee.", "To invite objections or claims from the public regarding the transfer of shares."], answer: "To invite objections or claims from the public regarding the transfer of shares." },
+            { question: "To convert 'Provisional Membership' to 'Primary Membership' (indicating full ownership rights) in a 'Death Case,' which of the following sets of court-issued or legally recognized documents must the legal heirs provide to the society?", options: ["Appendix 15, Appendix 18, and a Notarized Power of Attorney.", "Death Certificate, Nomination Form, and Original Share Certificate.", "Legal Heir Certificate, Succession Certificate, or a duly probated Will.", "Joint Affidavit (if applicable) and an Indemnity Bond."], answer: "Legal Heir Certificate, Succession Certificate, or a duly probated Will." },
+            { question: "Before the legal heirs are officially recorded and primary membership is granted, what is the temporary legal status of a person who receives membership based solely on nomination in a 'Death Case'?", options: ["Owner.", "Primary Member.", "Trustee.", "Co-owner."], answer: "Trustee." },
+            { question: "If a member dies without nomination, and the society needs to issue a public notice (Appendix 16) to invite claims, for how long should this notice be displayed on the society's notice board?", options: ["15 days.", "30 days.", "6 months.", "Until a legal heir comes forward."], answer: "30 days." },
+            { question: "In a 'Death Case' where a nominee applies for membership using Appendix 15 but has no independent source of income, which form is typically filled out by another earning family member, and for what primary reason?", options: ["Appendix 18; to provide an undertaking of indemnity for legal heirship.", "Appendix 4; to undertake the financial liabilities on behalf of the applicant.", "Appendix 3; to declare no objection from the family for membership transfer.", "Appendix 17; to apply for membership as a legal heir without nomination."], answer: "Appendix 4; to undertake the financial liabilities on behalf of the applicant." },
+            { question: "Is a 'Transfer Premium' applicable in a 'Death Case' when transferring shares to a nominee or legal heir?", options: ["Yes, a standard transfer premium is always applicable.", "Yes, but only if the nominee is not a direct family member.", "No, a transfer premium is not applicable in a death case.", "The applicability depends on the society's individual bylaws."], answer: "No, a transfer premium is not applicable in a death case." },
+            { question: "What is the primary reason the society requires the Death Certificate of the deceased member?", options: ["To determine the legal heirs of the deceased.", "To confirm the exact date of death for record-keeping.", "To verify that the member has genuinely expired and prevent fraudulent claims.", "To calculate the outstanding dues until the date of death."], answer: "To verify that the member has genuinely expired and prevent fraudulent claims." },
+            { question: "Why does the society require the Original Share Certificate from the applicant in a 'Death Case'?", options: ["To verify the authenticity of the flat ownership.", "To confirm the flat's market value for premium calculation.", "To endorse the name of the new member(s) on it.", "To cross-reference with the society's original records."], answer: "To endorse the name of the new member(s) on it." },
+            { question: "In a 'Death Case' with multiple nominees, if they decide to transfer membership to only one person, which form is typically used by the other nominees, and what is its purpose?", options: ["Appendix 4; to provide an undertaking for financial liabilities.", "Appendix 16; to invite public objections to the transfer.", "A Joint Affidavit; to indicate which nominee should become the member and confirm no objection.", "Appendix 17; to apply for membership as a legal heir without nomination."], answer: "A Joint Affidavit; to indicate which nominee should become the member and confirm no objection." },
+            { question: "According to the case study, what is the flat number and area of the property involved?", options: ["Flat No. 101, 75 sq. meters.", "Flat No. 301, 50 sq. meters.", "Flat No. 202, 60 sq. meters.", "Flat No. 301, 70 sq. meters."], answer: "Flat No. 301, 50 sq. meters." },
+            { question: "When filling out Appendix 15 for a nominee with no independent income, how should the income declaration paragraph be handled?", options: ["The entire paragraph should be struck out.", "The first line should be kept, and the next four lines struck out.", "The first line should be struck out, and the next four lines related to no independent income should be kept.", "The society will provide a separate form for income declaration."], answer: "The first line should be struck out, and the next four lines related to no independent income should be kept." },
+            { question: "Which of the following forms/appendices, when prepared on stamp paper, must be notarized?", options: ["Appendix 15 only.", "Appendix 16 only.", "All appendices prepared on stamp paper.", "Only Appendix 4 and the Joint Affidavit."], answer: "All appendices prepared on stamp paper." },
+            { question: "Who is primarily responsible for deciding and declaring who the 'legal heirs' of a deceased member are?", options: ["The Housing Society's Managing Committee.", "The Nominee(s) of the deceased member.", "A competent Court (e.g., High Court or Civil Court).", "The local municipal corporation."], answer: "A competent Court (e.g., High Court or Civil Court)." },
+            { question: "When a member dies without nomination, how must the Appendix 16 notice be publicized by the society?", options: ["Only by displaying it on the society's notice board for 30 days.", "Only by publishing it in one local newspaper with wide circulation.", "By displaying it on the society's notice board for 30 days AND publishing it in two local newspapers with wide circulation.", "By sending it via registered post to all known family members."], answer: "By displaying it on the society's notice board for 30 days AND publishing it in two local newspapers with wide circulation." },
+            { question: "How does Appendix 17, used in 'Death Cases' without nomination, compare to Appendix 15?", options: ["It is completely different and has unique requirements.", "It requires additional information about the family tree.", "It is exactly the same as Appendix 15, with only the form number changed.", "It is for minor heirs, while Appendix 15 is for adult nominees."], answer: "It is exactly the same as Appendix 15, with only the form number changed." },
+            { question: "What is the primary focus of Bylaw Number 34?", options: ["Procedures for the sale or gift deed of a flat.", "Transfer of shares to a nominee in a death case.", "Guidelines for conducting society elections.", "Rules for collecting maintenance charges."], answer: "Transfer of shares to a nominee in a death case." },
+            { question: "What is the primary focus of Bylaw Number 35?", options: ["Procedures for the sale or gift deed of a flat.", "Transfer of shares when a member dies without making a nomination.", "Guidelines for conducting society elections.", "Rules for collecting maintenance charges."], answer: "Transfer of shares when a member dies without making a nomination." },
+            { question: "In a 'Death Case' with nomination, within how many months should the nominee(s) apply for membership?", options: ["1 month.", "3 months.", "6 months.", "12 months."], answer: "6 months." },
+            { question: "When a provisional member's name is endorsed on the Share Certificate, what specific term must be added next to their name?", options: ["'Legal Heir.'", "'Co-owner.'", "'Provisional Member.'", "'Trustee.'"], answer: "'Provisional Member.'" },
+            { question: "What does it mean for a nominee to be considered a 'Trustee' in a 'Death Case'?", options: ["They are the legal owner and can sell the flat immediately.", "They manage the society's funds on behalf of the deceased.", "They temporarily hold the flat's interest for the legal heirs without gaining ownership rights.", "They are automatically granted primary membership."], answer: "They temporarily hold the flat's interest for the legal heirs without gaining ownership rights." },
+            { question: "If a society committee is unsure about the true legal heirs, what might they request from the claimants?", options: ["A declaration from a local political leader.", "A certificate from a competent court, such as a Succession Certificate.", "An affidavit from their local police station.", "A joint declaration signed by all society members."], answer: "A certificate from a competent court, such as a Succession Certificate." },
+            { question: "What is a 'Release Deed' (हक्कसोडपत्र) in the context of legal heirs claiming a deceased member's flat?", options: ["A document issued by the society to release the flat for sale.", "A deed where one legal heir formally gives up their rights to the flat in favor of another.", "A certificate confirming the transfer of ownership.", "An agreement about outstanding dues."], answer: "A deed where one legal heir formally gives up their rights to the flat in favor of another." },
+            { question: "Does a 'Legal Heir Certificate' issued by a court have an expiration date?", options: ["Yes, it is valid for 5 years.", "Yes, it needs to be renewed annually.", "No, it does not have a validity period and remains valid unless superseded by a new court order.", "It depends on the specific state laws."], answer: "No, it does not have a validity period and remains valid unless superseded by a new court order." },
+            { question: "In the example case provided, who are the three nominated persons for Mr. Jayanta De (JD)?", options: ["His brother, sister, and mother.", "His wife, son, and daughter.", "His two sons and his wife.", "His wife and two daughters."], answer: "His wife, son, and daughter." }
+        ];
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        const questionCounterEl = document.getElementById('question-counter');
+        const timerEl = document.getElementById('timer');
+        const progressBarEl = document.getElementById('progress-bar');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+
+        const scoreTextEl = document.getElementById('score-text');
+        const timeTakenEl = document.getElementById('time-taken');
+        const resultMessageEl = document.getElementById('result-message');
+        const resultIconContainerEl = document.getElementById('result-icon-container');
+        
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timerInterval;
+        let timeRemaining = 15 * 60; // 15 minutes in seconds
+
+        startBtn.addEventListener('click', startQuiz);
+        restartBtn.addEventListener('click', () => {
+             currentQuestionIndex = 0;
+            score = 0;
+            timeRemaining = 15 * 60;
+            resultsScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        });
+
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            startTimer();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionTextEl.innerText = currentQuestion.question;
+            questionCounterEl.innerText = `QUESTION ${currentQuestionIndex + 1} OF ${quizData.length}`;
+            progressBarEl.style.width = `${((currentQuestionIndex + 1) / quizData.length) * 100}%`;
+
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.classList.add('option-btn', 'p-4', 'flex', 'items-center', 'gap-4');
+                button.innerHTML = `<span class="option-prefix h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">${String.fromCharCode(65 + index)}</span> <span class="flex-grow">${option}</span>`;
+                button.addEventListener('click', () => selectOption(button, option));
+                optionsContainerEl.appendChild(button);
+            });
+             lucide.createIcons();
+        }
+        
+        function resetState() {
+            while (optionsContainerEl.firstChild) {
+                optionsContainerEl.removeChild(optionsContainerEl.firstChild);
+            }
+        }
+
+        function selectOption(button, selectedAnswer) {
+            const currentQuestion = quizData[currentQuestionIndex];
+            const correctAnswer = currentQuestion.answer;
+
+            Array.from(optionsContainerEl.children).forEach(btn => {
+                btn.disabled = true;
+                const textSpan = btn.querySelector('.flex-grow');
+                if (textSpan && textSpan.innerText === correctAnswer) {
+                    btn.classList.add('correct');
+                }
+            });
+
+            if (selectedAnswer === correctAnswer) {
+                score++;
+                button.classList.add('correct');
+            } else {
+                button.classList.add('incorrect');
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1500); 
+        }
+        
+        function startTimer() {
+            timerEl.innerText = "15:00";
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerEl.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeRemaining <= 0) {
+                    showResults();
+                }
+            }, 1000);
+        }
+        
+        function showResults() {
+            clearInterval(timerInterval);
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            
+            scoreTextEl.innerText = `${score}/${quizData.length}`;
+            const totalTime = 15 * 60;
+            const timeSpent = totalTime - timeRemaining;
+            const minutesSpent = Math.floor(timeSpent / 60);
+            const secondsSpent = timeSpent % 60;
+            timeTakenEl.innerText = `${minutesSpent}m ${secondsSpent}s`;
+
+            let message = '';
+            let icon = '';
+            let iconColorClass = '';
+            let bgColorClass = '';
+            
+            const percentage = (score / quizData.length) * 100;
+
+            if (percentage >= 90) {
+                message = 'Outstanding! Your expertise is remarkable.';
+                icon = 'trophy';
+                iconColorClass = 'text-amber-500';
+                bgColorClass = 'bg-amber-100';
+                scoreTextEl.classList.add('text-amber-500');
+            } else if (percentage >= 75) {
+                message = 'Excellent work! You have a strong grasp of the material.';
+                icon = 'check-circle-2';
+                iconColorClass = 'text-green-500';
+                bgColorClass = 'bg-green-100';
+                scoreTextEl.classList.add('text-green-500');
+            } else if (percentage >= 50) {
+                message = 'Good effort! A little more review will make you an expert.';
+                icon = 'thumbs-up';
+                iconColorClass = 'text-blue-500';
+                bgColorClass = 'bg-blue-100';
+                scoreTextEl.classList.add('text-blue-500');
+            } else {
+                message = 'Keep studying! Review the course material to improve.';
+                icon = 'book-open';
+                iconColorClass = 'text-orange-500';
+                bgColorClass = 'bg-orange-100';
+                scoreTextEl.classList.add('text-orange-500');
+            }
+            resultMessageEl.innerText = message;
+            resultIconContainerEl.innerHTML = `<i data-lucide="${icon}" class="h-12 w-12 ${iconColorClass}"></i>`;
+            resultIconContainerEl.className = `inline-block p-5 rounded-full ${bgColorClass}`;
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
